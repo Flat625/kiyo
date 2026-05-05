@@ -1,6 +1,12 @@
 # backend/main.py —— Kiyo API 入口
 import sys
 import os
+# 禁用代理环境变量，避免 OpenAI SDK 报错
+import os
+os.environ.pop('HTTP_PROXY', None)
+os.environ.pop('HTTPS_PROXY', None)
+os.environ.pop('http_proxy', None)
+os.environ.pop('https_proxy', None)
 
 # 添加当前目录到 sys.path，支持直接运行
 current_dir = os.path.dirname(os.path.abspath(__file__))
