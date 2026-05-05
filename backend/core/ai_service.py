@@ -1,12 +1,18 @@
 import json, re, os
-from openai import OpenAI
 import sys
+
+# 在导入 OpenAI 之前，确保代理变量被移除
+os.environ.pop('HTTP_PROXY', None)
+os.environ.pop('HTTPS_PROXY', None)
+os.environ.pop('http_proxy', None)
+os.environ.pop('https_proxy', None)
 
 # 添加当前目录到 sys.path
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
+from openai import OpenAI
 from config.settings import DOUBAO_API_KEY, DOUBAO_BASE_URL, DOUBAO_MODEL
 from core.prompts import CHAT_SYSTEM, ANALYZE_RECORD, PLAN_LEARNING
 from core.logger import logger
