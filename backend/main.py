@@ -15,11 +15,13 @@ if current_dir not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from core.database import init_db
 from api.chat import router as chat_router
 from api.records import router as records_router
 from api.learning import router as learning_router
 from api.analytics import router as analytics_router
+import requests
 
 init_db()
 
@@ -35,3 +37,45 @@ app.include_router(analytics_router, prefix="/api/analytics", tags=["📊 分析
 @app.get("/")
 def root():
     return {"message": "Kiyo API is running", "version": "3.0"}
+
+# ==================== Streamlit 代理路由 ====================
+STREAMLIT_URL = "http://127.0.0.1:8501"
+
+@app.get("/streamlit/")
+async def streamlit_index():
+    """代理 Streamlit 首页"""
+    try:
+        response = requests.get(f"{STREAMLIT_URL}/", stream=True)
+        return StreamingResponse(
+            response.iter_content(chunk_size=1024),
+            media_type=response.headers.get("Content-Type", "text/html"),
+            status_code=response.status_code
+        )
+    except Exception as e:
+        return {"error": f"Streamlit 服务未启动: {str(e)}"}
+
+@app.get("/streamlit/{path:path}")
+async def streamlit_proxy_get(path: str):
+    """代理 Streamlit GET 请求"""
+    try:
+        response = requests.get(f"{STREAMLIT_URL}/{path}", stream=True)
+        return StreamingResponse(
+            response.iter_content(chunk_size=1024),
+            media_type=response.headers.get("Content-Type", "application/octet-stream"),
+            status_code=response.status_code
+        )
+    except Exception as e:
+        return {"error": f"Streamlit 代理失败: {str(e)}"}
+
+@app.post("/streamlit/{path:path}")
+async def streamlit_proxy_post(path: str):
+    """代理 Streamlit POST 请求"""
+    try:
+        response = requests.post(f"{STREAMLIT_URL}/{path}", stream=True)
+        return StreamingResponse(
+            response.iter_content(chunk_size=1024),
+            media_type=response.headers.get("Content-Type", "application/octet-stream"),
+            status_code=response.status_code
+        )
+    except Exception as e:
+        return {"error": f"Streamlit 代理失败: {str(e)}"}

@@ -1,0 +1,11 @@
+[build]
+# 安装依赖
+command = "pip install -r backend/requirements.txt"
+
+[deploy]
+# 使用统一入口文件启动
+command = "python server.py"
+
+[env]
+# 设置环境变量
+PORT = "8000"
